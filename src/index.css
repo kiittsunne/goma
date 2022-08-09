@@ -1,0 +1,48 @@
+:root {
+  --grey: #a3a3a3;
+  --purple: #b4a7c6;
+  --red: #cb6761;
+  --orange: #deac79;
+  --blue: #88a5b7;
+  --turqoise: #8bbfbf;
+  --green: #a8b38c;
+}
+
+#pills-home-tab {
+  color: var(--purple);
+}
+
+#pills-profile-tab {
+  color: var(--orange);
+}
+
+#pills-contact-tab {
+  color: var(--red);
+}
+
+#pills-home-tab.active {
+  background-color: var(--purple);
+  color: white;
+}
+
+#pills-profile-tab.active {
+  background-color: var(--orange);
+  color: white;
+}
+
+#pills-contact-tab.active {
+  background-color: var(--red);
+  color: white;
+}
+
+.pop.btn {
+  color: var(--grey);
+}
+
+.pop.btn:hover {
+  color: rgb(49, 49, 49);
+}
+
+.hover-row:hover {
+  background-color: aliceblue;
+}
