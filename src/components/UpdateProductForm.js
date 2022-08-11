@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { categories } from "../data/categories";
+import { useAuthState } from "../contexts/AuthContext";
 
-/* #region  FilePond imports */
-// Import React FilePond
-import { FilePond, registerPlugin } from "react-filepond";
-// Import FilePond styles
-import "filepond/dist/filepond.min.css";
-// Import the Image EXIF Orientation and Image Preview plugins
-import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
-import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-// Register the plugins
-registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
-/* #endregion */
-
-const NewProductForm = () => {
-  const [files, setFiles] = useState([]);
+const UpdateProductForm = ({ item, handleUpdateItem, getItems }) => {
+  /* #region  Form Fields General State Management */
   const initNewItem = {
     name: "",
     description: "",
     category: null,
+    subCategory: null,
     price: "",
     stock: "",
     dimension_enabled: false,
@@ -28,16 +17,23 @@ const NewProductForm = () => {
     dimension_inventory: [],
   };
   const [input, setInput] = useState(initNewItem);
+  const [subCategories, setSubCategory] = useState([]);
   const handleChange = (event) => {
     event.preventDefault();
     const { id, value } = event.target;
+    if (id === "category") {
+      const cat = categories.filter((category) => category.name === value);
+      setSubCategory(cat[0].subCategories);
+    }
     setInput({ ...input, [id]: value });
   };
+  /* #endregion */
 
+  /* #region  Variations Type, Options, Price, Stock State Management */
   const initHelper = { type: "", options: "" };
+  const initOptions = { enabled: false, type: "", options: [] };
   const [main, setMain] = useState(initHelper);
   const [sub, setSub] = useState(initHelper);
-  const initOptions = { enabled: false, type: "", options: [] };
   const [dimensions, setDimensions] = useState({
     enabled: false,
     editing: true,
@@ -50,6 +46,74 @@ const NewProductForm = () => {
     units: [],
   });
   const [inventoryHelper, setInventoryHelper] = useState(inventory.units);
+
+  // Handler Functions
+  const handleRemoveDimensions = (e) => {
+    if (!dimensions.enabled) {
+      setDimensions({ ...dimensions, enabled: true });
+    }
+    if (dimensions.enabled) {
+      setDimensions({
+        ...dimensions,
+        enabled: false,
+        editing: true,
+        main: initOptions,
+        sub: initOptions,
+      });
+      setMain(initHelper);
+      setSub(initHelper);
+      setInventory({
+        showInputTable: false,
+        editingInputTable: true,
+        units: [],
+      });
+      setInventoryHelper(inventory.units);
+    }
+  };
+  const handleDimensions = (e) => {
+    if (dimensions.editing) {
+      const mainOptions = main.options.split(",");
+      mainOptions.forEach((option) => option.replace(/\s/g, ""));
+      if (sub.type.length !== 0) {
+        const subOptions = sub.options.split(",");
+        subOptions.forEach((option) => option.replace(/\s/g, ""));
+        setDimensions({
+          ...dimensions,
+          enabled: true,
+          editing: false,
+          main: {
+            ...initOptions,
+            enabled: true,
+            type: main.type,
+            options: mainOptions,
+          },
+          sub: {
+            ...initOptions,
+            enabled: true,
+            type: sub.type,
+            options: subOptions,
+          },
+        });
+      } else {
+        setDimensions({
+          ...dimensions,
+          enabled: true,
+          editing: false,
+          main: {
+            ...initOptions,
+            enabled: true,
+            type: main.type,
+            options: mainOptions,
+          },
+          sub: {
+            ...initOptions,
+          },
+        });
+      }
+    } else {
+      setDimensions({ ...dimensions, editing: true });
+    }
+  };
   const handleInventoryPriceStock = (e) => {
     e.preventDefault();
     if (inventory.editingInputTable) {
@@ -60,6 +124,9 @@ const NewProductForm = () => {
       });
     } else setInventory({ ...inventory, editingInputTable: true });
   };
+
+  // Handler for form state changes during variation changes
+  /* #region   */
   useEffect(() => {
     const initUnit = { mainOption: "", price: 0, stock: 0 };
     if (
@@ -215,71 +282,9 @@ const NewProductForm = () => {
     if (dimensions.editing)
       setInventory({ ...inventory, showInputTable: false });
   }, [dimensions]);
-  const handleRemoveDimensions = (e) => {
-    e.preventDefault();
-    if (!dimensions.enabled) {
-      setDimensions({ ...dimensions, enabled: true });
-    }
-    if (dimensions.enabled) {
-      setDimensions({
-        ...dimensions,
-        enabled: false,
-        editing: true,
-        main: initOptions,
-        sub: initOptions,
-      });
-      setMain(initHelper);
-      setSub(initHelper);
-      setInventory({
-        showInputTable: false,
-        editingInputTable: true,
-        units: [],
-      });
-      setInventoryHelper(inventory.units);
-    }
-  };
-  const handleDimensions = (e) => {
-    if (dimensions.editing) {
-      const mainOptions = main.options.replace(/\s/g, "").split(",");
-      if (sub.type.length !== 0) {
-        const subOptions = sub.options.replace(/\s/g, "").split(",");
-        setDimensions({
-          ...dimensions,
-          enabled: true,
-          editing: false,
-          main: {
-            ...initOptions,
-            enabled: true,
-            type: main.type,
-            options: mainOptions,
-          },
-          sub: {
-            ...initOptions,
-            enabled: true,
-            type: sub.type,
-            options: subOptions,
-          },
-        });
-      } else {
-        setDimensions({
-          ...dimensions,
-          enabled: true,
-          editing: false,
-          main: {
-            ...initOptions,
-            enabled: true,
-            type: main.type,
-            options: mainOptions,
-          },
-          sub: {
-            ...initOptions,
-          },
-        });
-      }
-    } else {
-      setDimensions({ ...dimensions, editing: true });
-    }
-  };
+  /* #endregion */
+
+  // Handler for setInput on inventory changes
   useEffect(() => {
     if (!inventory.editingInputTable) {
       setInput({
@@ -291,11 +296,158 @@ const NewProductForm = () => {
       });
     }
   }, [inventory]);
+  /* #endregion */
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(input);
+  /* #region  Image Upload State Management */
+  const [fileInputState, setFileInputState] = useState("");
+  const [previewSource, setPreviewSource] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const handleFileInputChange = (e) => {
+    const file = e.target.files[0];
+    previewFile(file);
+    setSelectedFile(file);
+    setFileInputState(e.target.value);
   };
+  const previewFile = (file) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      setPreviewSource(reader.result);
+    };
+  };
+  /* #endregion */
+
+  useEffect(() => {
+    setInput({
+      ...input,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      subCategory: item.subCategory,
+
+      price: item.price,
+      stock: item.stock,
+    });
+    if (item.dimension_enabled) {
+      setDimensions({
+        ...dimensions,
+        enabled: true,
+        editing: false,
+        main: item.dimension_main,
+        sub: item.dimension_sub,
+      });
+      setMain({
+        type: item.dimension_main.type,
+        options: item.dimension_main.options.join(","),
+      });
+      if (item.dimension_sub.enabled) {
+        setSub({
+          type: item.dimension_sub.type,
+          options: item.dimension_sub.options.join(","),
+        });
+      }
+      setInventoryHelper(item.dimension_inventory);
+      setInventory({
+        showInputTable: true,
+        editingInputTable: false,
+        units: item.dimension_inventory,
+      });
+    }
+    setPreviewSource(item.image);
+  }, [item]);
+  useEffect(() => {
+    const cat = [];
+    categories.forEach((category) => {
+      if (category.name === item.category) {
+        category.subCategories.forEach((sub) => cat.push(sub));
+      }
+    });
+    setSubCategory(cat);
+  }, [input.subCategory]);
+
+  /* #region  Form Submission State Management */
+
+  const [isSaving, setIsSaving] = useState({
+    state: false,
+    display: "Update",
+    message: "",
+  });
+  const handleClose = (e) => {
+    handleUpdateItem({});
+    getItems();
+  };
+
+  // Converts file to Base644
+  //   const handleImage = async (e) => {
+  //     e.preventDefault();
+  //     if (selectedFile !== null) {
+  //       setIsSaving({ ...isSaving, state: true, display: "Updating" });
+  //       const reader = new FileReader();
+  //       reader.readAsDataURL(selectedFile);
+  //       reader.onloadend = async () => {
+  //         await handleSubmit(reader.result);
+  //       };
+  //       reader.onerror = () => {
+  //         console.log("Something went wrong");
+  //       };
+  //     } else {
+  //       setIsSaving({ ...isSaving, state: true, display: "Updating" });
+  //       await handleSubmit(input.image);
+  //     }
+  //   };
+
+  // Injects additional data into Item object not provided by form inputs
+  const { id: seller_id, token, name: seller_name } = useAuthState().user;
+
+  // API call: Update Listing
+  const handleSubmit = async (base64image) => {
+    setIsSaving({ ...isSaving, state: true, display: "Updating" });
+    const itemId = item._id;
+    setInput({
+      ...input,
+      seller_id: seller_id,
+      itemId: itemId,
+      seller_name: seller_name,
+    });
+    const requestOptions = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(input),
+    };
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/items/update/${itemId}`,
+        requestOptions
+      );
+      const data = await response.json();
+      if (data.status === 200) {
+        console.log(data);
+        setIsSaving({
+          state: false,
+          display: "Saved!",
+          message: `${data.message}! You can close me now.`,
+        });
+      } else {
+        setIsSaving({
+          state: false,
+          display: "Retry!",
+          message: "Something went wrong!",
+        });
+        console.log(data);
+      }
+    } catch (err) {
+      setIsSaving({
+        state: false,
+        display: "Oh No!",
+        message: "Something went wrong! 382",
+      });
+      console.log(err.message);
+    }
+  };
+  /* #endregion */
 
   return (
     <form>
@@ -328,14 +480,14 @@ const NewProductForm = () => {
         </label>
       </div>
 
-      {/* item category selector */}
+      {/* item category & subcategory selector */}
       <div className="form-floating mb-3">
         <select
           className="form-select"
           id="category"
           aria-label="Item Category"
           placeholder="Category"
-          defaultValue={input.category}
+          value={input.category}
           onChange={handleChange}
         >
           <option selected disabled value="Category">
@@ -353,6 +505,32 @@ const NewProductForm = () => {
           Select Category <span style={{ color: `var(--grey)` }}>*</span>
         </label>
       </div>
+      {subCategories && subCategories.length !== 0 && (
+        <div className="form-floating mb-3">
+          <select
+            className="form-select"
+            id="subCategory"
+            aria-label="Item Sub-Category"
+            placeholder="Sub-Category"
+            value={input.subCategory}
+            onChange={handleChange}
+          >
+            <option selected disabled value="Sub-Category">
+              Sub-Category
+            </option>
+            {subCategories.map((subCategory, index) => {
+              return (
+                <option key={index} value={subCategory}>
+                  {subCategory}
+                </option>
+              );
+            })}
+          </select>
+          <label htmlFor="subCategory">
+            Select Sub-Category <span style={{ color: `var(--grey)` }}>*</span>
+          </label>
+        </div>
+      )}
 
       {/* item price & stock (no variation) */}
       <div className="d-flex flex-row align-content-center">
@@ -491,17 +669,18 @@ const NewProductForm = () => {
         ""
       ) : (
         <>
+          {/* Input Table */}
           <div className="container border rounded-2 mb-3">
             {/* Table header row */}
             <div className="row border-bottom fw-bold">
               <div className="col border-end text-center">
-                {dimensions.main.type[0].toUpperCase() +
-                  dimensions.main.type.substring(1)}
+                {dimensions?.main.type[0].toUpperCase() +
+                  dimensions?.main.type.substring(1)}
               </div>
               {dimensions.sub.type && dimensions.sub.type.length !== 0 ? (
                 <div className="col border-end-0 text-center">
-                  {dimensions.sub.type[0].toUpperCase() +
-                    dimensions.sub.type.substring(1)}
+                  {dimensions?.sub.type[0].toUpperCase() +
+                    dimensions?.sub.type.substring(1)}
                 </div>
               ) : (
                 ""
@@ -586,75 +765,61 @@ const NewProductForm = () => {
       )}
 
       {/* item image uploader */}
-      <FilePond
-        /* #region   */
-        files={files}
-        onupdatefiles={setFiles}
-        allowMultiple={true}
-        maxFiles={3}
-        server="/api"
-        name="files"
-        imagePreviewHeight={250}
-        imagePreviewTransparencyIndicator={`#f00`}
-        labelIdle="Drag & Drop Images (Up to 3)"
-        credits={{ label: "", url: "" }}
-        /* #endregion */
-      />
-      <div className="modal-footer border-0 p-0">
-        <button
-          type="button"
-          className="btn text-white"
-          style={{ backgroundColor: `var(--grey)` }}
-          data-bs-dismiss="modal"
-        >
-          Close
-        </button>
-        <div
-          onClick={handleSubmit}
-          className="btn text-white"
-          style={{ backgroundColor: `var(--green)` }}
-        >
-          Save
+      <div className="form-floating mb-1">
+        <input
+          disabled={true}
+          type="file"
+          className="form-control"
+          id="image"
+          placeholder="~"
+          value={fileInputState}
+          onChange={handleFileInputChange}
+        />
+        <label htmlFor="name">
+          Click to Update File <span style={{ color: `var(--grey)` }}>*</span>
+        </label>
+      </div>
+      {previewSource && (
+        <div className="mb-3">
+          <img src={previewSource} alt="chosen" style={{ height: "100px" }} />
+        </div>
+      )}
+
+      <div className="modal-footer d-flex flex-row justify-content-between border-0 p-0">
+        <div className="text-secondary">{isSaving.message}</div>
+        <div>
+          <button
+            type="button"
+            className="btn text-white"
+            style={{ backgroundColor: `var(--grey)` }}
+            data-bs-dismiss="modal"
+            onClick={handleClose}
+          >
+            Close
+          </button>
+          <button
+            disabled={isSaving.state}
+            onClick={handleSubmit}
+            className="btn text-white ms-2"
+            style={{ backgroundColor: `var(--green)` }}
+          >
+            {isSaving.state === true ? (
+              <span>
+                <span
+                  class="spinner-grow spinner-grow-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>{" "}
+                Saving
+              </span>
+            ) : (
+              <>{isSaving.display}</>
+            )}
+          </button>
         </div>
       </div>
     </form>
   );
 };
 
-const NewProductModal = () => {
-  return (
-    <div
-      class="modal fade"
-      id="exampleModal"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-      tabindex="-1"
-      aria-labelledby="staticBackdropLabel"
-      aria-hidden="true"
-    >
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content">
-          <div className="modal-header border-0">
-            <h5 className="modal-title" id="exampleModalLabel">
-              Add New Listing
-            </h5>
-            <button type="button" className="pop btn border-0">
-              <i className="bi bi-box-arrow-up-right"></i>
-            </button>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div className="modal-body">
-            <NewProductForm />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default NewProductModal;
+export default UpdateProductForm;

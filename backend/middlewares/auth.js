@@ -15,7 +15,7 @@ const auth = (req, res, next) => {
       });
     }
   } catch (error) {
-    return res.status(401).send({ status: "error", message: "unauthorised" });
+    return res.status(401).send({ status: "error", message: error });
   }
 };
 

@@ -1,12 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthState } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import jumbotron from "./assets/goma.png";
 import { categories } from "./data/categories";
-import homeSvg from "./assets/home.svg";
+import ItemCard from "./components/ItemCard";
 
 const App = () => {
-  const { name } = useAuthState().user;
+  const { name, token } = useAuthState().user;
+
+  const [category, setCategory] = useState("");
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    const requestOptions = {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+    };
+    async function getItems() {
+      try {
+        const response = await fetch(
+          `http://localhost:5001/api/items/category/${category}`,
+          requestOptions
+        );
+        const data = await response.json();
+        if (data.status === 200) {
+          setItems(data.data);
+        } else {
+          console.log(data);
+        }
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+    getItems();
+  }, [category]);
+
   return (
     <>
       <Navbar />
@@ -54,6 +84,9 @@ const App = () => {
                         style={{
                           margin: "0.5em",
                           padding: ".5em 0 .5em 0",
+                        }}
+                        onClick={() => {
+                          setCategory(category.name);
                         }}
                       >
                         <img
@@ -139,15 +172,14 @@ const App = () => {
       </div>
 
       {/* Feature Artists */}
-      {/* <div
-        className="container-fluid d-flex flex-column justify-content-center align-items-center"
+      <div
+        className="container-fluid d-flex flex-column justify-content-center align-items-center bg-light"
         style={{ marginTop: "4em" }}
       >
-        <div className="" style={{ maxWidth: "550px" }}>
-          <img src={homeSvg} className="img-fluid" alt="welcomesvg" />
-        </div>
-        <h1 className="display-4 mt-4">Hi {name}</h1>
-      </div> */}
+        {items.map((item) => {
+          <ItemCard item={item} />;
+        })}
+      </div>
     </>
   );
 };
