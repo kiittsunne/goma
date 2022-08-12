@@ -41,13 +41,16 @@ const SignUpForm = () => {
     event.preventDefault();
     inputType === "password" ? setInputType("text") : setInputType("password");
   }
+  function toggle(value) {
+    return !value;
+  }
   function handleCheckedState() {
     checkedState === false ? setCheckedState(true) : setCheckedState(false);
   }
   function handleChange(event) {
     event.preventDefault();
     const { id, value } = event.target;
-    if (id === "isMaker") handleCheckedState();
+    if (id === "isMaker") return;
     setInput({ ...input, [id]: value });
   }
   /* #endregion */
@@ -86,7 +89,12 @@ const SignUpForm = () => {
     }
   }
   /* #endregion */
-
+  useEffect(() => {
+    setInput({ ...input, isMaker: checkedState });
+  }, [checkedState]);
+  useEffect(() => {
+    console.log(input);
+  }, [input]);
   return (
     <>
       {showErrorToast === "hide" ? (
@@ -195,7 +203,7 @@ const SignUpForm = () => {
                   checked={checkedState}
                   type="checkbox"
                   id="isMaker"
-                  onChange={handleChange}
+                  onChange={() => setCheckedState(toggle)}
                 />
                 <label class="form-check-label" htmlFor="isMaker">
                   I'm a Maker!{" "}
