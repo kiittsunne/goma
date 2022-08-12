@@ -9,7 +9,7 @@
 ### Gallery
 
 User Sign-Up (+Validation) & Login
-![User Sign-Up & Login](https://imgur.com/g6PAXM2)
+![User Sign-Up & Login](https://imgur.com/a/kOwBnhl)
 
 Seller Create & Update Listing
 ![Create & Update Listings](https://imgur.com/j4LfAKy)
