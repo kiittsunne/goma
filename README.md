@@ -9,16 +9,16 @@
 ### Gallery
 
 User Sign-Up (+Validation) & Login
-![User Sign-Up & Login](../sei-project4/public/assets/signup.gif)
+![User Sign-Up & Login](https://github.com/kiittsunne/goma/blob/main/public/assets/signup.gif)
 
 Seller Create & Update Listing
-![Create & Update Listings](../sei-project4/public/assets/create-edit.gif)
+![Create & Update Listings](https://github.com/kiittsunne/goma/blob/main/public/assets/create-edit.gif)
 
 Multi-tier Custom Item Variations
-![Multi-tier Variations](../sei-project4/public/assets/multi-tier.gif)
+![Multi-tier Variations](https://github.com/kiittsunne/goma/blob/main/public/assets/multi-tier.gif)
 
 Listing Deletion
-![Delete](../sei-project4/public/assets/delete.gif)
+![Delete](https://github.com/kiittsunne/goma/blob/main/public/assets/delete.gif)
 
 ### Technologies & User Story
 
@@ -96,6 +96,6 @@ router.put("/items", auth, async (req, res) => {
 
 Managing form state was quite challenging due to the competing requirements of input control and the need for dynamically generated input fields. Setting up the state so that it could be easily reversed for populating fields with data fetched from DB was also quite difficult.
 
-![Image](../sei-project4/public/assets/code.png)
+![Image](https://github.com/kiittsunne/goma/blob/main/public/assets/code.png)
 
 The solution that ended up working the best was the use of lots of helper states (i.e. set a state then use a hook to update the primary state/ set the primary state on some button click later). It was also helpful to break down the individual fields with more complex interaction and handle the state for these separately, before bundling it all together at the end.
